@@ -1,0 +1,403 @@
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CULPADO!? — Chamada de Equipe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..900,0..100;1,9..144,300..900,0..100&family=Manrope:wght@200..800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --carvao:#0A0A0A; --fumaca:#141414; --noite:#1C1C1C; --carvao-up:#2A2A2A;
+    --brasa:#E8762D; --brasa-deep:#B85A1A; --brasa-soft:#F4A574;
+    --vigilia:#5B8FB9; --vigilia-deep:#3E6580;
+    --cinza:#6B6B6B; --cinza-claro:#9A9A9A;
+    --pergaminho:#F2EDE0; --pergaminho-dim:#C7C2B5;
+    --ok:#7dd87d; --err:#ff6b5e;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--carvao);color:var(--pergaminho-dim);font-family:'Manrope',sans-serif;font-weight:300;-webkit-font-smoothing:antialiased}
+  body{
+    min-height:100vh;line-height:1.7;
+    background:
+      radial-gradient(900px 600px at 50% -5%, rgba(232,118,45,.16), transparent 60%),
+      radial-gradient(600px 500px at 50% 108%, rgba(232,118,45,.08), transparent 60%),
+      linear-gradient(180deg, var(--carvao) 0%, var(--fumaca) 100%);
+    position:relative;overflow-x:hidden;
+  }
+  /* grão de filme */
+  body::after{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:1;opacity:.045;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    mix-blend-mode:overlay;
+  }
+  .wrap{max-width:760px;margin:0 auto;padding:54px 22px 90px;position:relative;z-index:2}
+
+  /* cabeçalho */
+  header{text-align:center;margin-bottom:14px}
+  .kicker{font-family:'JetBrains Mono',monospace;font-weight:400;letter-spacing:.3em;text-transform:uppercase;font-size:11px;color:var(--brasa);margin-bottom:22px}
+  .logo{
+    font-family:'Fraunces',serif;font-weight:300;font-size:clamp(56px,13vw,116px);line-height:.86;
+    letter-spacing:-.04em;color:var(--pergaminho);display:inline-block;
+  }
+  .logo .q{color:var(--brasa);font-style:italic;font-weight:400}
+  .ember-rule{
+    width:62px;height:1px;margin:24px auto 20px;border:0;
+    background:linear-gradient(90deg,transparent,var(--brasa),transparent);
+    box-shadow:0 0 16px rgba(232,118,45,.5);
+  }
+  .tagline{font-family:'Fraunces',serif;font-style:italic;color:var(--pergaminho-dim);font-size:1.15rem;max-width:540px;margin:0 auto;line-height:1.5}
+  .meta{font-family:'JetBrains Mono',monospace;font-weight:400;letter-spacing:.2em;text-transform:uppercase;font-size:11px;color:var(--cinza);margin-top:24px}
+  .meta b{color:var(--pergaminho-dim);font-weight:500}
+
+  /* card */
+  .card{
+    background:var(--fumaca);
+    border:1px solid var(--noite);
+    border-radius:4px;
+    padding:36px 30px;
+    margin-top:36px;
+    box-shadow:0 30px 70px rgba(0,0,0,.55);
+  }
+  .section-title{
+    font-family:'JetBrains Mono',monospace;font-weight:500;letter-spacing:.22em;text-transform:uppercase;
+    font-size:11px;color:var(--brasa);margin-bottom:7px;
+  }
+  .section-sub{font-family:'Fraunces',serif;font-size:14px;color:var(--cinza-claro);font-style:italic;margin-bottom:22px;line-height:1.5}
+
+  label.field{display:block;margin-bottom:22px}
+  .lbl{display:block;font-family:'JetBrains Mono',monospace;font-weight:400;letter-spacing:.1em;text-transform:uppercase;font-size:11px;color:var(--pergaminho-dim);margin-bottom:9px}
+  .lbl .opt{color:var(--cinza);text-transform:none;letter-spacing:0;font-family:'Fraunces',serif;font-style:italic;font-size:12px}
+  input[type=text],input[type=email],textarea,select{
+    width:100%;background:var(--carvao);border:1px solid var(--carvao-up);color:var(--pergaminho);
+    font-family:'Manrope',sans-serif;font-size:15px;padding:13px 14px;border-radius:3px;transition:.18s;
+  }
+  textarea{resize:vertical;min-height:84px;line-height:1.5}
+  input:focus,textarea:focus,select:focus{outline:none;border-color:var(--brasa);box-shadow:0 0 0 3px rgba(232,118,45,.12)}
+  ::placeholder{color:#5a5550}
+
+  /* grade de áreas */
+  .areas-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:4px}
+  @media(max-width:560px){.areas-grid{grid-template-columns:1fr}}
+  .area{
+    position:relative;border:1px solid var(--carvao-up);border-radius:3px;
+    padding:14px 14px 14px 44px;cursor:pointer;transition:.16s;background:rgba(255,255,255,.01);
+  }
+  .area:hover{border-color:var(--brasa-deep);background:rgba(232,118,45,.04)}
+  .area input{position:absolute;opacity:0;pointer-events:none}
+  .area .box{
+    position:absolute;left:14px;top:14px;width:18px;height:18px;border:1px solid var(--carvao-up);
+    border-radius:2px;transition:.16s;display:flex;align-items:center;justify-content:center;
+  }
+  .area .box::after{content:"";width:9px;height:9px;background:var(--brasa);border-radius:1px;transform:scale(0);transition:.16s;box-shadow:0 0 10px var(--brasa)}
+  .area input:checked ~ .box{border-color:var(--brasa)}
+  .area input:checked ~ .box::after{transform:scale(1)}
+  .area input:checked ~ .a-name{color:var(--pergaminho)}
+  .area .a-name{font-family:'Fraunces',serif;font-weight:400;font-size:15px;letter-spacing:0;color:var(--pergaminho-dim);display:block;line-height:1.25}
+  .area .a-desc{font-family:'Manrope',sans-serif;font-size:11.5px;color:var(--cinza);margin-top:4px;display:block;line-height:1.4}
+  .area.sel{border-color:var(--brasa);background:rgba(232,118,45,.06)}
+
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:560px){.row2{grid-template-columns:1fr}}
+
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+  .chip{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--carvao-up);
+    border-radius:30px;padding:8px 15px;cursor:pointer;color:var(--cinza-claro);transition:.16s;user-select:none}
+  .chip:hover{border-color:var(--brasa-deep);color:var(--pergaminho-dim)}
+  .chip.on{background:var(--brasa);border-color:var(--brasa);color:var(--carvao);font-weight:500}
+
+  .btn{
+    width:100%;margin-top:8px;background:var(--brasa);color:var(--carvao);border:0;cursor:pointer;
+    font-family:'JetBrains Mono',monospace;font-weight:500;letter-spacing:.18em;text-transform:uppercase;font-size:13px;
+    padding:17px;border-radius:3px;transition:.18s;box-shadow:0 10px 30px rgba(232,118,45,.22)
+  }
+  .btn:hover{filter:brightness(1.07);transform:translateY(-1px);box-shadow:0 14px 36px rgba(232,118,45,.32)}
+  .btn:active{transform:translateY(0)}
+  .btn.ghost{background:transparent;border:1px solid var(--carvao-up);color:var(--cinza-claro);box-shadow:none;letter-spacing:.14em;font-weight:400}
+  .btn.ghost:hover{border-color:var(--brasa-deep);color:var(--pergaminho-dim);filter:none}
+
+  .note{font-family:'Fraunces',serif;font-size:13px;color:var(--cinza);font-style:italic;text-align:center;margin-top:16px;line-height:1.5}
+  .msg{padding:12px 14px;border-radius:3px;font-size:14px;margin-bottom:16px;display:none}
+  .msg.show{display:block}
+  .msg.err{background:rgba(255,107,94,.1);border:1px solid rgba(255,107,94,.4);color:var(--err)}
+  .msg.ok{background:rgba(125,216,125,.08);border:1px solid rgba(125,216,125,.35);color:var(--ok)}
+
+  /* sucesso */
+  .done{text-align:center;padding:30px 10px}
+  .done .mark{font-family:'Fraunces',serif;font-style:italic;font-size:54px;color:var(--brasa);text-shadow:0 0 30px rgba(232,118,45,.55);margin-bottom:14px}
+  .done h2{font-family:'Fraunces',serif;font-weight:300;color:var(--pergaminho);font-size:28px;margin-bottom:12px;letter-spacing:-.01em}
+  .done p{font-family:'Fraunces',serif;color:var(--pergaminho-dim);font-style:italic;line-height:1.6;max-width:440px;margin:0 auto 26px}
+
+  /* painel */
+  .panel-bar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:22px}
+  .stat b{font-family:'Fraunces',serif;font-size:44px;color:var(--vigilia);font-weight:300;line-height:1;display:block}
+  .stat span{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--cinza)}
+  .insc{border:1px solid var(--noite);border-left:2px solid var(--vigilia-deep);border-radius:3px;padding:18px;margin-bottom:12px;background:rgba(255,255,255,.01)}
+  .insc h3{font-family:'Fraunces',serif;font-weight:400;color:var(--pergaminho);font-size:20px;letter-spacing:0}
+  .insc .who{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:9px}
+  .insc .when{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--cinza);letter-spacing:.12em}
+  .insc .line{font-size:14px;color:var(--pergaminho-dim);margin:4px 0}
+  .insc .line b{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--cinza-claro);font-weight:400;font-style:normal}
+  .insc .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:11px}
+  .insc .tag{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;background:rgba(232,118,45,.1);border:1px solid rgba(232,118,45,.28);color:var(--brasa);padding:5px 10px;border-radius:20px}
+  .empty{font-family:'Fraunces',serif;text-align:center;color:var(--cinza);font-style:italic;padding:40px 0}
+  .gate input{margin-bottom:12px}
+  .foot-link{text-align:center;margin-top:30px}
+  .foot-link a{color:var(--cinza);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;text-decoration:none;border-bottom:1px solid transparent;transition:.16s;cursor:pointer}
+  .foot-link a:hover{color:var(--brasa);border-color:var(--brasa)}
+  .hidden{display:none!important}
+  .spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(232,118,45,.3);border-top-color:var(--brasa);border-radius:50%;animation:s .7s linear infinite;vertical-align:-2px;margin-right:7px}
+  @keyframes s{to{transform:rotate(360deg)}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="kicker">Trinity Arts Lab · TCC · Chamada de Equipe</div>
+    <div class="logo">Culpado<span class="q">!?</span></div>
+    <hr class="ember-rule">
+    <p class="tagline">Um curta de horror psicológico. Procuro pessoas interessadas em compor o projeto e construir isso comigo — da turma ou de fora dela — em frente à fogueira, no escuro do teatro.</p>
+    <div class="meta">Direção e roteiro <b>ARALTO</b> · Rio de Janeiro · <b>5 diárias</b> de filmagem</div>
+  </header>
+
+  <!-- ===================== FORMULÁRIO ===================== -->
+  <div id="formView">
+    <div class="card">
+      <div class="msg" id="formMsg"></div>
+
+      <div class="section-title">01 · Quem é você</div>
+      <div class="section-sub">Para eu te encontrar e montar a equipe.</div>
+
+      <label class="field">
+        <span class="lbl">Nome completo</span>
+        <input type="text" id="f_nome" placeholder="Seu nome">
+      </label>
+
+      <div class="row2">
+        <label class="field">
+          <span class="lbl">Contato <span class="opt">(WhatsApp, e-mail ou @)</span></span>
+          <input type="text" id="f_contato" placeholder="(11) 9... · email · @">
+        </label>
+        <label class="field">
+          <span class="lbl">Vínculo <span class="opt">(turma/curso, ou de onde você vem)</span></span>
+          <input type="text" id="f_turma" placeholder="Ex.: Cinema 6º sem. · ou externo">
+        </label>
+      </div>
+
+      <div class="section-title" style="margin-top:8px">02 · Em que área você quer atuar</div>
+      <div class="section-sub">Marque tudo que te interessa. Pode ser mais de uma — a gente acerta os detalhes depois.</div>
+      <div class="areas-grid" id="areasGrid"></div>
+
+      <div style="margin-top:26px">
+        <div class="section-title">03 · Disponibilidade</div>
+        <div class="section-sub">Quando você consegue se comprometer com as diárias.</div>
+        <span class="lbl">Você topa as 5 diárias?</span>
+        <div class="chips" id="dispChips"></div>
+      </div>
+
+      <label class="field" style="margin-top:24px">
+        <span class="lbl">Experiência / portfólio <span class="opt">(opcional — link, drive, @)</span></span>
+        <input type="text" id="f_port" placeholder="Já fez algo? Cola o link ou descreve em uma linha">
+      </label>
+
+      <label class="field">
+        <span class="lbl">Por que você quer entrar nesse projeto? <span class="opt">(opcional)</span></span>
+        <textarea id="f_obs" placeholder="O que te atraiu, o que você espera, qualquer observação..."></textarea>
+      </label>
+
+      <button class="btn" id="submitBtn">Quero participar</button>
+      <p class="note">Suas respostas vão direto para a lista de interessados da produção. Sem spam, sem compromisso fechado — é só o primeiro passo.</p>
+    </div>
+
+    <div class="foot-link"><a id="goPanel">▸ Painel do realizador</a></div>
+  </div>
+
+  <!-- ===================== SUCESSO ===================== -->
+  <div id="doneView" class="hidden">
+    <div class="card done">
+      <div class="mark">✦</div>
+      <h2>Você está na lista</h2>
+      <p>Anotado. Vou organizar a equipe por área e te chamo no contato que você deixou. Obrigado por querer construir o <i>Culpado!?</i> comigo.</p>
+      <button class="btn ghost" id="anotherBtn">Inscrever outra pessoa</button>
+    </div>
+  </div>
+
+  <!-- ===================== PAINEL ===================== -->
+  <div id="panelView" class="hidden">
+    <div class="card">
+      <div id="gate" class="gate">
+        <div class="section-title">Painel reservado</div>
+        <div class="section-sub">Área do realizador — digite o código para ver a lista de interessados.</div>
+        <div class="msg" id="gateMsg"></div>
+        <input type="text" id="gateInput" placeholder="Código de acesso">
+        <button class="btn" id="gateBtn">Entrar</button>
+        <div class="foot-link"><a id="backForm1">▸ Voltar ao formulário</a></div>
+      </div>
+
+      <div id="list" class="hidden">
+        <div class="panel-bar">
+          <div class="stat"><b id="count">0</b><span>Inscritos</span></div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn ghost" id="refreshBtn" style="width:auto;padding:11px 16px;margin:0">Atualizar</button>
+            <button class="btn ghost" id="csvBtn" style="width:auto;padding:11px 16px;margin:0">Exportar CSV</button>
+          </div>
+        </div>
+        <div id="listBody"></div>
+        <div class="foot-link"><a id="backForm2">▸ Voltar ao formulário</a></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ====== CONFIG — troque o código antes de compartilhar ====== */
+const ACCESS_CODE = "culpado9";   // <-- mude aqui o código do painel
+
+/* ====== Áreas disponíveis ====== */
+const AREAS = [
+  ["Produção / Produção Executiva","Cronograma, logística, alimentação, autorizações"],
+  ["Assistente de Edição","Apoio à montagem: organização de takes, cortes e logs"],
+  ["Iluminação","Montagem de luz e atmosfera (luz da fogueira)"],
+  ["Som Direto / Captação","Microfonia, boom, gravação em set"],
+  ["Cenografia","O teatro, a fogueira central, o espaço cênico"],
+  ["Figurino","Roupas dos 9 personagens e do Investigador"],
+  ["Maquiagem / Caracterização","Visagismo e caracterização dos personagens"],
+  ["Montagem / Edição","Corte, ritmo e estrutura dos episódios"],
+  ["Pós-produção (Color / VFX)","Cor, finalização e efeitos pontuais"],
+  ["Trilha Sonora / Sound Design","Música original e desenho sonoro"],
+  ["Continuísta / Continuidade","Raccord no set, logs e controle de cena"],
+  ["Elenco / Atuação","Atuar como um dos personagens ou o Investigador"],
+  ["Still / Making-of","Fotografia de cena e registro dos bastidores"],
+  ["Produção de Set / Assist. Geral","Pé-direito do set: apoio em tudo"],
+  ["Desenvolvimento do App Interativo","Programação do app interativo da série"],
+  ["Divulgação / Mídias Sociais","Conteúdo, viralização e gestão de redes"]
+];
+const DISP = ["Sim, todas as 5","Parcial — só alguns dias","Depende da escala","Só pós/remoto"];
+
+/* ====== Render dinâmico ====== */
+const grid = document.getElementById('areasGrid');
+AREAS.forEach((a,i)=>{
+  const el=document.createElement('label');
+  el.className='area';
+  el.innerHTML=`<input type="checkbox" value="${a[0].replace(/"/g,'&quot;')}">
+    <span class="box"></span>
+    <span class="a-name">${a[0]}</span>
+    <span class="a-desc">${a[1]}</span>`;
+  const cb=el.querySelector('input');
+  cb.addEventListener('change',()=>el.classList.toggle('sel',cb.checked));
+  grid.appendChild(el);
+});
+const chipsWrap=document.getElementById('dispChips');
+let dispVal="";
+DISP.forEach(d=>{
+  const c=document.createElement('div');c.className='chip';c.textContent=d;
+  c.addEventListener('click',()=>{
+    document.querySelectorAll('#dispChips .chip').forEach(x=>x.classList.remove('on'));
+    c.classList.add('on');dispVal=d;
+  });
+  chipsWrap.appendChild(c);
+});
+
+/* ====== Helpers de view ====== */
+const $=id=>document.getElementById(id);
+function show(view){
+  ['formView','doneView','panelView'].forEach(v=>$(v).classList.add('hidden'));
+  $(view).classList.remove('hidden');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function msg(el,text,type){el.textContent=text;el.className='msg show '+type;}
+function clearMsg(el){el.className='msg';}
+
+/* ====== Submit ====== */
+$('submitBtn').addEventListener('click',async()=>{
+  const nome=$('f_nome').value.trim();
+  const contato=$('f_contato').value.trim();
+  const areas=[...document.querySelectorAll('#areasGrid input:checked')].map(c=>c.value);
+  const fm=$('formMsg');
+  if(!nome){return msg(fm,'Por favor, preencha seu nome.','err');}
+  if(!contato){return msg(fm,'Deixe um contato para eu te chamar.','err');}
+  if(areas.length===0){return msg(fm,'Marque pelo menos uma área de interesse.','err');}
+  clearMsg(fm);
+  const btn=$('submitBtn');btn.disabled=true;btn.innerHTML='<span class="spin"></span>Enviando...';
+
+  const rec={
+    nome, contato, areas, disp:dispVal,
+    turma:$('f_turma').value.trim(),
+    port:$('f_port').value.trim(),
+    obs:$('f_obs').value.trim(),
+    ts:Date.now()
+  };
+  const key='insc:'+rec.ts+'-'+Math.random().toString(36).slice(2,7);
+  try{
+    await window.storage.set(key, JSON.stringify(rec), true); // shared = visível para a produção
+    show('doneView');
+  }catch(e){
+    msg(fm,'Não consegui salvar agora. Tente novamente em instantes.','err');
+  }finally{
+    btn.disabled=false;btn.textContent='Quero participar';
+  }
+});
+
+$('anotherBtn').addEventListener('click',()=>{
+  ['f_nome','f_contato','f_turma','f_port','f_obs'].forEach(id=>$(id).value='');
+  document.querySelectorAll('#areasGrid input:checked').forEach(c=>{c.checked=false;c.closest('.area').classList.remove('sel');});
+  document.querySelectorAll('#dispChips .chip').forEach(x=>x.classList.remove('on'));dispVal='';
+  show('formView');
+});
+
+/* ====== Painel ====== */
+$('goPanel').addEventListener('click',()=>{show('panelView');$('gate').classList.remove('hidden');$('list').classList.add('hidden');});
+$('backForm1').addEventListener('click',()=>show('formView'));
+$('backForm2').addEventListener('click',()=>show('formView'));
+$('gateBtn').addEventListener('click',()=>{
+  if($('gateInput').value.trim()===ACCESS_CODE){
+    $('gate').classList.add('hidden');$('list').classList.remove('hidden');loadList();
+  }else{msg($('gateMsg'),'Código incorreto.','err');}
+});
+$('gateInput').addEventListener('keydown',e=>{if(e.key==='Enter')$('gateBtn').click();});
+$('refreshBtn').addEventListener('click',loadList);
+
+let CURRENT=[];
+async function loadList(){
+  const body=$('listBody');body.innerHTML='<div class="empty"><span class="spin"></span> Carregando inscrições...</div>';
+  try{
+    const res=await window.storage.list('insc:',true);
+    const keys=(res&&res.keys)?res.keys:[];
+    const recs=[];
+    for(const k of keys){
+      try{const r=await window.storage.get(k,true);if(r&&r.value)recs.push(JSON.parse(r.value));}catch(e){}
+    }
+    recs.sort((a,b)=>b.ts-a.ts);
+    CURRENT=recs;
+    $('count').textContent=recs.length;
+    if(recs.length===0){body.innerHTML='<div class="empty">Nenhuma inscrição ainda. Compartilhe o link com a turma.</div>';return;}
+    body.innerHTML=recs.map(r=>{
+      const d=new Date(r.ts).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+      const tags=(r.areas||[]).map(a=>`<span class="tag">${esc(a)}</span>`).join('');
+      return `<div class="insc">
+        <div class="who"><h3>${esc(r.nome)}</h3><span class="when">${d}</span></div>
+        <div class="line"><b>Contato:</b> ${esc(r.contato)}</div>
+        ${r.turma?`<div class="line"><b>Turma:</b> ${esc(r.turma)}</div>`:''}
+        ${r.disp?`<div class="line"><b>Disponibilidade:</b> ${esc(r.disp)}</div>`:''}
+        ${r.port?`<div class="line"><b>Portfólio:</b> ${esc(r.port)}</div>`:''}
+        ${r.obs?`<div class="line"><b>Motivação:</b> ${esc(r.obs)}</div>`:''}
+        <div class="tags">${tags}</div>
+      </div>`;
+    }).join('');
+  }catch(e){
+    body.innerHTML='<div class="empty">Erro ao carregar. Toque em Atualizar.</div>';
+  }
+}
+function esc(s){return String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+$('csvBtn').addEventListener('click',()=>{
+  if(!CURRENT.length)return;
+  const head=['Data','Nome','Contato','Turma','Disponibilidade','Areas','Portfolio','Motivacao'];
+  const rows=CURRENT.map(r=>[
+    new Date(r.ts).toLocaleString('pt-BR'),r.nome,r.contato,r.turma||'',r.disp||'',
+    (r.areas||[]).join(' | '),r.port||'',r.obs||''
+  ]);
+  const csv=[head,...rows].map(line=>line.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);const a=document.createElement('a');
+  a.href=url;a.download='culpado_equipe_interessados.csv';a.click();URL.revokeObjectURL(url);
+});
+</script>

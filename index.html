@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CULPADO!? — Série Interativa de Terror Psicológico</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..900,0..100;1,9..144,300..900,0..100&family=Manrope:wght@200..800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --carvao:#0A0A0A; --fumaca:#141414; --noite:#1C1C1C; --carvao-up:#2A2A2A;
+    --brasa:#E8762D; --brasa-deep:#B85A1A; --brasa-soft:#F4A574;
+    --vigilia:#5B8FB9; --vigilia-deep:#3E6580;
+    --cinza:#6B6B6B; --cinza-claro:#9A9A9A;
+    --pergaminho:#F2EDE0; --pergaminho-dim:#C7C2B5;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--carvao);color:var(--pergaminho-dim);
+    font-family:'Manrope',sans-serif;font-weight:300;line-height:1.7;
+    -webkit-font-smoothing:antialiased;overflow-x:hidden;
+  }
+  /* grão sutil */
+  body::after{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:200;opacity:.04;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    mix-blend-mode:overlay;
+  }
+  .serif{font-family:'Fraunces',serif}
+  .mono{font-family:'JetBrains Mono',monospace}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 5vw}
+
+  .eyebrow{font-family:'JetBrains Mono',monospace;font-weight:400;letter-spacing:.3em;text-transform:uppercase;font-size:11px;color:var(--brasa)}
+  h2.sec{font-family:'Fraunces',serif;font-weight:300;font-size:clamp(2.4rem,5vw,4.2rem);color:var(--pergaminho);line-height:1.02;letter-spacing:-.02em;margin:16px 0 0}
+  .reveal{opacity:0;transform:translateY(26px);transition:opacity 1s ease,transform 1s ease}
+  .reveal.in{opacity:1;transform:none}
+
+  /* ===== NAV ===== */
+  nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;justify-content:space-between;align-items:center;
+    padding:20px 5vw;transition:.4s}
+  nav.scrolled{background:rgba(10,10,10,.85);backdrop-filter:blur(14px);border-bottom:1px solid var(--noite);padding:14px 5vw}
+  nav .brand{font-family:'Fraunces',serif;font-weight:300;letter-spacing:-.02em;font-size:24px;color:var(--pergaminho);text-decoration:none}
+  nav .brand .sign{color:var(--brasa);font-style:italic;font-weight:400}
+  nav .links{display:flex;gap:30px}
+  nav .links a{font-family:'JetBrains Mono',monospace;font-weight:400;letter-spacing:.18em;text-transform:uppercase;font-size:10.5px;color:var(--cinza-claro);text-decoration:none;transition:.2s}
+  nav .links a:hover{color:var(--brasa)}
+  @media(max-width:820px){nav .links{display:none}}
+
+  /* ===== HERO ===== */
+  .hero{min-height:100vh;display:flex;flex-direction:column;justify-content:space-between;position:relative;padding:7rem 5vw 3rem}
+  .hero-glow{position:absolute;left:50%;bottom:-12%;transform:translateX(-50%);width:min(1000px,130vw);height:62vh;
+    background:radial-gradient(ellipse at center bottom, rgba(232,118,45,.26), rgba(184,90,26,.08) 42%, transparent 70%);
+    filter:blur(10px);animation:flicker 6s ease-in-out infinite;pointer-events:none;z-index:0}
+  @keyframes flicker{0%,100%{opacity:.82;transform:translateX(-50%) scale(1)}25%{opacity:.6;transform:translateX(-51%) scale(1.02)}50%{opacity:.95;transform:translateX(-49%) scale(.99)}75%{opacity:.7;transform:translateX(-50%) scale(1.03)}}
+  .hero-top{position:relative;z-index:2;display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--cinza);letter-spacing:.25em;text-transform:uppercase;animation:fadeUp .9s .1s both}
+  .hero-mid{position:relative;z-index:2;flex:1;display:flex;flex-direction:column;justify-content:center}
+  .hero h1{font-family:'Fraunces',serif;font-weight:300;font-size:clamp(5rem,18vw,15rem);line-height:.86;letter-spacing:-.05em;color:var(--pergaminho);animation:fadeUp 1.1s .25s both}
+  .hero h1 .q{color:var(--brasa);font-style:italic;font-weight:400;display:inline-block;animation:swing 7s ease-in-out infinite}
+  @keyframes swing{0%,100%{transform:rotate(-1.5deg)}50%{transform:rotate(2.5deg)}}
+  .hero .sub{font-family:'Fraunces',serif;font-style:italic;font-weight:300;font-size:clamp(1.1rem,2.3vw,1.6rem);color:var(--pergaminho-dim);max-width:620px;margin-top:2rem;line-height:1.45;animation:fadeUp 1.1s .45s both}
+  .hero-bottom{position:relative;z-index:2;display:flex;justify-content:space-between;align-items:end;gap:2rem;flex-wrap:wrap;animation:fadeUp 1.1s .6s both}
+  .hero-meta{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--cinza);letter-spacing:.22em;text-transform:uppercase;line-height:2}
+  .hero-meta b{color:var(--pergaminho-dim);font-weight:500}
+  .scroll-cue{font-family:'JetBrains Mono',monospace;letter-spacing:.3em;font-size:10px;text-transform:uppercase;color:var(--cinza);animation:bob 2.2s ease-in-out infinite}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(7px)}}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:none}}
+
+  section{padding:8rem 0;position:relative}
+  .divider{height:1px;background:var(--noite);max-width:1180px;margin:0 auto}
+
+  /* ===== CONCEITO ===== */
+  .concept-grid{display:grid;grid-template-columns:1.15fr 1fr;gap:5rem;align-items:center;margin-top:3.5rem}
+  @media(max-width:860px){.concept-grid{grid-template-columns:1fr;gap:3rem}}
+  .concept-text p{font-size:1.05rem;color:var(--pergaminho-dim);margin-bottom:1.2rem}
+  .concept-text p.lead{font-family:'Fraunces',serif;font-size:1.5rem;color:var(--pergaminho);font-style:italic;line-height:1.4;margin-bottom:1.6rem}
+  .concept-text .drop::first-letter{font-family:'Fraunces',serif;font-weight:400;font-size:4.2rem;float:left;line-height:.78;padding:8px 14px 0 0;color:var(--brasa)}
+  .firepit{aspect-ratio:1;border-radius:50%;position:relative;display:flex;align-items:center;justify-content:center;
+    background:radial-gradient(circle, rgba(232,118,45,.15), rgba(184,90,26,.05) 55%, transparent 72%)}
+  .firepit::before{content:"";position:absolute;inset:18%;border-radius:50%;border:1px dashed var(--carvao-up)}
+  .firepit .core{width:40%;height:40%;border-radius:50%;
+    background:radial-gradient(circle at 50% 65%, var(--brasa-soft), var(--brasa) 38%, var(--brasa-deep) 72%, #5a2a0e);
+    box-shadow:0 0 80px rgba(232,118,45,.55),0 0 150px rgba(232,118,45,.25);animation:pulse 3.6s ease-in-out infinite}
+  @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+  .firepit .seat{position:absolute;width:12px;height:12px;border-radius:2px;background:var(--carvao-up)}
+
+  /* ===== O JOGO ===== */
+  .mech{background:linear-gradient(180deg,var(--carvao),var(--fumaca))}
+  .mech-head{max-width:720px}
+  .mech-head .lead-p{font-family:'Fraunces',serif;font-style:italic;margin-top:1.4rem;font-size:1.25rem;color:var(--pergaminho-dim);max-width:680px;line-height:1.5}
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:1.6rem;margin-top:4.5rem}
+  @media(max-width:780px){.steps{grid-template-columns:1fr}}
+  .step{border-top:1px solid var(--carvao-up);padding-top:1.4rem}
+  .step .n{font-family:'JetBrains Mono',monospace;font-weight:500;font-size:12px;letter-spacing:.2em;color:var(--brasa)}
+  .step h4{font-family:'Fraunces',serif;font-weight:400;color:var(--pergaminho);font-size:1.25rem;margin:.7rem 0 .5rem}
+  .step p{font-size:.95rem;color:var(--cinza-claro)}
+
+  /* ===== INTERATIVO (discreto, em Vigília) ===== */
+  .inter{background:
+      radial-gradient(700px 420px at 82% 0%, rgba(91,143,185,.10), transparent 60%),
+      linear-gradient(180deg,var(--fumaca),var(--carvao))}
+  .inter .eyebrow{color:var(--vigilia)}
+  .inter h2.sec .accentv{color:var(--vigilia);font-style:italic}
+  .inter-p{font-family:'Manrope';margin-top:1.4rem;font-size:1.1rem;color:var(--pergaminho-dim);max-width:680px}
+  .verdict{display:grid;grid-template-columns:1fr 1fr;gap:1rem;max-width:540px;margin:3.2rem auto 0}
+  @media(max-width:560px){.verdict{grid-template-columns:1fr}}
+  .vbtn{border:1px solid var(--carvao-up);padding:1.7rem;text-align:center;font-family:'JetBrains Mono',monospace;
+    text-transform:uppercase;letter-spacing:.18em;font-weight:500;font-size:.85rem;position:relative;overflow:hidden;transition:.25s}
+  .vbtn .pct{font-family:'Fraunces',serif;font-size:2.4rem;display:block;margin-top:.6rem;font-weight:300;letter-spacing:0}
+  .vbtn.guilty{color:var(--brasa);border-color:rgba(232,118,45,.4)}
+  .vbtn.innocent{color:var(--vigilia);border-color:rgba(91,143,185,.4)}
+  .vbtn .bar{position:absolute;left:0;bottom:0;height:2px;background:currentColor;transition:width 1.4s ease}
+  .inter-cap{text-align:center;margin-top:1.4rem;font-family:'Fraunces',serif;font-style:italic;color:var(--cinza);font-size:.95rem}
+
+  /* ===== PERSONAGENS ===== */
+  .suspects{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin-top:3.2rem;background:var(--noite);border:1px solid var(--noite)}
+  @media(max-width:480px){.suspects{grid-template-columns:repeat(2,1fr)}}
+  .suspect{position:relative;aspect-ratio:3/4;overflow:hidden;
+    background:radial-gradient(120% 80% at 50% 120%, rgba(232,118,45,.18), transparent 60%),linear-gradient(180deg,var(--fumaca),var(--carvao));
+    display:flex;align-items:flex-end;justify-content:center;transition:.35s}
+  .suspect::after{content:"";position:absolute;inset:0;background:radial-gradient(80% 60% at 50% 100%,rgba(232,118,45,.14),transparent 70%);opacity:0;transition:.35s}
+  .suspect:hover::after{opacity:1}
+  .suspect svg{width:76%;height:88%;position:relative;z-index:2;transition:.35s}
+  .suspect:hover svg{transform:translateY(-2px)}
+  .suspect .sil{fill:#050505;opacity:.85;transition:.35s}
+  .suspect:hover .sil{fill:#0b0b0b;opacity:.95}
+  .suspect .num{position:absolute;top:11px;left:13px;z-index:3;font-family:'JetBrains Mono',monospace;font-weight:400;font-size:12px;letter-spacing:.1em;color:var(--cinza);transition:.35s}
+  .suspect:hover .num{color:var(--brasa)}
+  .cast .note{margin-top:2rem;font-family:'Fraunces',serif;font-style:italic;color:var(--cinza);font-size:1rem}
+
+  /* ===== PRODUÇÃO / FICHA ===== */
+  .bts{background:linear-gradient(180deg,var(--carvao),var(--fumaca))}
+  .specs{display:grid;grid-template-columns:repeat(3,1fr);gap:2rem;margin-top:3.5rem}
+  @media(max-width:600px){.specs{grid-template-columns:1fr}}
+  .spec{border-top:1px solid var(--carvao-up);padding-top:1.4rem}
+  .spec b{display:block;font-family:'Fraunces',serif;font-weight:300;font-size:3.2rem;color:var(--brasa);line-height:1}
+  .spec span{font-family:'JetBrains Mono',monospace;letter-spacing:.18em;text-transform:uppercase;font-size:10.5px;color:var(--cinza-claro);margin-top:.7rem;display:block}
+
+  /* ===== CTA EQUIPE ===== */
+  .join{text-align:center;background:radial-gradient(800px 500px at 50% 130%, rgba(232,118,45,.16), transparent 60%),var(--fumaca);position:relative}
+  .join h2{font-family:'Fraunces',serif;font-weight:300;font-size:clamp(2.6rem,7vw,5.5rem);line-height:.98;color:var(--pergaminho);letter-spacing:-.02em}
+  .join h2 em{color:var(--brasa);font-style:italic}
+  .join p{max-width:600px;margin:1.6rem auto 0;font-family:'Fraunces',serif;font-style:italic;color:var(--pergaminho-dim);font-size:1.2rem}
+  .cta{display:inline-block;margin-top:2.6rem;background:var(--brasa);color:var(--carvao);text-decoration:none;
+    font-family:'JetBrains Mono',monospace;font-weight:500;letter-spacing:.18em;text-transform:uppercase;font-size:12px;
+    padding:1.1rem 2.8rem;transition:.22s;box-shadow:0 12px 36px rgba(232,118,45,.22)}
+  .cta:hover{filter:brightness(1.07);transform:translateY(-2px);box-shadow:0 18px 44px rgba(232,118,45,.34)}
+  .join small{display:block;margin-top:1.3rem;font-family:'JetBrains Mono',monospace;letter-spacing:.16em;text-transform:uppercase;font-size:10.5px;color:var(--cinza)}
+
+  /* ===== FOOTER institucional ===== */
+  footer{padding:4rem 5vw 3rem;border-top:1px solid var(--noite);background:var(--carvao)}
+  .foot-grid{max-width:1180px;margin:0 auto;display:flex;justify-content:space-between;align-items:start;gap:2rem;flex-wrap:wrap}
+  footer .fbrand{font-family:'Fraunces',serif;font-weight:300;font-size:1.8rem;color:var(--pergaminho)}
+  footer .fbrand .sign{color:var(--brasa);font-style:italic;font-weight:400}
+  footer .fmeta{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--cinza);line-height:2.1;text-align:right}
+  @media(max-width:600px){.foot-grid{flex-direction:column}footer .fmeta{text-align:left}}
+</style>
+</head>
+<body>
+
+<nav id="nav">
+  <a href="#top" class="brand">Culpado<span class="sign">!?</span></a>
+  <div class="links">
+    <a href="#conceito">Conceito</a>
+    <a href="#mecanica">O Jogo</a>
+    <a href="#interativo">Interativo</a>
+    <a href="#personagens">Personagens</a>
+    <a href="#bastidores">Produção</a>
+    <a href="#equipe">Equipe</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<header class="hero" id="top">
+  <div class="hero-glow"></div>
+  <div class="hero-top">
+    <span>Série interativa de terror psicológico</span>
+    <span>Aralto Audiovisual / 2026</span>
+  </div>
+  <div class="hero-mid">
+    <h1>Culpado<span class="q">!?</span></h1>
+    <p class="sub">Nove desconhecidos. Uma fogueira no centro de um teatro vazio. Um jogo com uma única regra — responder às perguntas — e um prêmio que pode custar mais caro do que parece.</p>
+  </div>
+  <div class="hero-bottom">
+    <div class="hero-meta">Direção e roteiro <b>ARALTO</b><br>Rio de Janeiro · <b>2026</b></div>
+    <div class="scroll-cue">Role para descer ↓</div>
+  </div>
+</header>
+
+<!-- CONCEITO -->
+<section class="concept" id="conceito">
+  <div class="wrap">
+    <div class="reveal"><div class="eyebrow">O Conceito</div><h2 class="sec">Só responda às perguntas</h2></div>
+    <div class="concept-grid">
+      <div class="concept-text reveal">
+        <p class="lead">Um teatro abandonado. No centro, uma fogueira. Ao redor dela, nove desconhecidos — atraídos pela mesma promessa: dinheiro.</p>
+        <p class="drop">As regras parecem simples. Ninguém precisa provar nada, ninguém precisa se explicar. Basta participar do jogo e responder às perguntas, uma a uma, sob a luz trêmula do fogo, conduzidas pelo Investigador. Quem chegar ao fim leva o prêmio.</p>
+        <p>Mas a cada resposta o jogo aperta. E o que começou como uma noite fácil de dinheiro fácil vai cobrando um preço que ninguém leu nas regras.</p>
+      </div>
+      <div class="firepit reveal" id="firepit">
+        <div class="core"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- O JOGO -->
+<section class="mech" id="mecanica">
+  <div class="wrap">
+    <div class="mech-head reveal">
+      <div class="eyebrow">O Jogo</div>
+      <h2 class="sec">A regra é uma só</h2>
+      <p class="lead-p">
+        Nove participantes. Um prêmio em dinheiro. Nenhuma defesa, nenhum tribunal —
+        apenas perguntas feitas à beira do fogo. Parece o jogo mais fácil do mundo. Quase.
+      </p>
+    </div>
+
+    <div class="steps">
+      <div class="step reveal"><div class="n">01</div><h4>Aceite o convite</h4><p>Nove desconhecidos chegam ao teatro atraídos pela promessa de um prêmio. Basta jogar para levá-lo.</p></div>
+      <div class="step reveal"><div class="n">02</div><h4>Responda às perguntas</h4><p>Uma a uma, diante da fogueira, conduzidas pelo Investigador. Sem provas, sem advogados — só a resposta.</p></div>
+      <div class="step reveal"><div class="n">03</div><h4>Descubra o preço</h4><p>Quanto mais a noite avança, mais o jogo aperta — e mais caro fica continuar sentado ali.</p></div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- JOGO INTERATIVO / APP -->
+<section class="inter" id="interativo">
+  <div class="wrap">
+    <div class="mech-head reveal">
+      <div class="eyebrow">A Experiência</div>
+      <h2 class="sec">Você também <span class="accentv">joga</span></h2>
+      <p class="inter-p">
+        <span class="serif" style="font-style:italic">Culpado!?</span> não se assiste de braços cruzados. Por um aplicativo, quem está do outro lado
+        da tela entra no jogo: a cada rodada, é convidado a tomar partido. Uma só pergunta, dois caminhos —
+        e a escolha não te deixa continuar sendo apenas espectador.
+      </p>
+    </div>
+
+    <div class="verdict reveal">
+      <div class="vbtn innocent">Inocente<span class="pct" data-target="34">0%</span><span class="bar" style="width:0"></span></div>
+      <div class="vbtn guilty">Culpado<span class="pct" data-target="66">0%</span><span class="bar" style="width:0"></span></div>
+    </div>
+    <p class="inter-cap">Toque, decida, assuma. A sua resposta também conta.</p>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- PERSONAGENS -->
+<section class="cast" id="personagens">
+  <div class="wrap">
+    <div class="reveal"><div class="eyebrow">O Elenco</div><h2 class="sec">Os nove do jogo</h2></div>
+    <div class="suspects reveal" id="silhouettes"></div>
+    <p class="note">Nove personagens em volta do fogo. Identidades reveladas a seu tempo.</p>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- PRODUÇÃO / FICHA TÉCNICA -->
+<section class="bts" id="bastidores">
+  <div class="wrap">
+    <div class="reveal"><div class="eyebrow">A Produção</div><h2 class="sec">Feito à luz do fogo</h2></div>
+    <div class="specs">
+      <div class="spec reveal"><b>09</b><span>Personagens</span></div>
+      <div class="spec reveal"><b>05</b><span>Diárias</span></div>
+      <div class="spec reveal"><b>01</b><span>Teatro · 01 fogueira</span></div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- EQUIPE / CTA -->
+<section class="join" id="equipe">
+  <div class="wrap reveal">
+    <div class="eyebrow" style="color:var(--brasa);margin-bottom:1.4rem">A Chamada</div>
+    <h2>Faça parte da <em>fogueira</em></h2>
+    <p>O <i>Culpado!?</i> está sendo construído por gente que quer fazer cinema de verdade — da turma ou de fora dela. Tem uma área em que você quer atuar? A chamada de equipe está aberta.</p>
+    <a class="cta"  href="culpado_formulario_equipev2.html">Quero participar →</a>
+    <small>Preencha o formulário de interesse · escolha sua área</small>
+  </div>
+</section>
+
+<footer>
+  <div class="foot-grid">
+    <div>
+      <div class="fbrand">Culpado<span class="sign">!?</span></div>
+    </div>
+    <div class="fmeta">
+      Série interativa de terror psicológico<br>
+      Direção e roteiro ARALTO · 2026<br>
+      Aralto Audiovisual — Rodolfo de Matos Marins<br>
+      Obra protegida — Lei 9.610/98
+    </div>
+  </div>
+</footer>
+
+<script>
+  // nav scroll state
+  const nav=document.getElementById('nav');
+  addEventListener('scroll',()=>nav.classList.toggle('scrolled',scrollY>40));
+
+  // reveal on scroll
+  const io=new IntersectionObserver((es)=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.18});
+  document.querySelectorAll('.reveal').forEach((el,i)=>{el.style.transitionDelay=(i%4*90)+'ms';io.observe(el)});
+
+  // barras de voto animam ao aparecer
+  const inter=document.getElementById('interativo');
+  if(inter){
+    const vo=new IntersectionObserver((es)=>es.forEach(e=>{
+      if(e.isIntersecting){
+        document.querySelectorAll('.vbtn').forEach(b=>{
+          const t=+b.querySelector('.pct').dataset.target;
+          b.querySelector('.bar').style.width=t+'%';
+          let c=0;const span=b.querySelector('.pct');
+          const iv=setInterval(()=>{c++;span.textContent=c+'%';if(c>=t)clearInterval(iv)},22);
+        });
+        vo.disconnect();
+      }
+    }),{threshold:.5});
+    vo.observe(inter);
+  }
+
+  // 9 silhuetas com capuz (princípio visual do brandbook)
+  const SIL = `<svg viewBox="0 0 100 130" preserveAspectRatio="xMidYMax meet" xmlns="http://www.w3.org/2000/svg">
+    <path class="sil" d="M50 6c-12 0-21 9-23 21-1 6 0 11 2 16-7 5-11 13-13 23-2 11-3 24-3 39v19h74v-19c0-15-1-28-3-39-2-10-6-18-13-23 2-5 3-10 2-16C71 15 62 6 50 6z"/>
+  </svg>`;
+  const sg=document.getElementById('silhouettes');
+  for(let i=1;i<=9;i++){
+    const d=document.createElement('div');d.className='suspect';
+    d.innerHTML='<span class="num">'+String(i).padStart(2,'0')+'</span>'+SIL;
+    sg.appendChild(d);
+  }
+
+  // fogueira: 9 lugares em volta
+  const fp=document.getElementById('firepit');
+  for(let i=0;i<9;i++){
+    const a=(i/9)*Math.PI*2 - Math.PI/2;
+    const s=document.createElement('div');s.className='seat';
+    s.style.left=(50+Math.cos(a)*40)+'%';
+    s.style.top=(50+Math.sin(a)*40)+'%';
+    s.style.transform='translate(-50%,-50%) rotate('+(a*180/Math.PI+90)+'deg)';
+    fp.appendChild(s);
+  }
+
+  // link do formulário de equipe — trocar href="#" pela URL real após publicar
+  document.getElementById('formLink').addEventListener('click',e=>{
+    e.preventDefault();
+    alert('Cole aqui o link do seu formulário de equipe (o arquivo culpado_formulario_equipe).\n\nNo código: procure por id="formLink" e troque o href="#" pela URL.');
+  });
+</script>
+</body>
+</html>
