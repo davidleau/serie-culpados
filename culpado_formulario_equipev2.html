@@ -206,8 +206,6 @@
       <button class="btn" id="submitBtn">Quero participar</button>
       <p class="note">Suas respostas vão direto para a lista de interessados da produção. Sem spam, sem compromisso fechado — é só o primeiro passo.</p>
     </div>
-
-    <div class="foot-link"><a id="goPanel">▸ Painel do realizador</a></div>
   </div>
 
   <!-- ===================== SUCESSO ===================== -->
@@ -219,37 +217,14 @@
       <button class="btn ghost" id="anotherBtn">Inscrever outra pessoa</button>
     </div>
   </div>
-
-  <!-- ===================== PAINEL ===================== -->
-  <div id="panelView" class="hidden">
-    <div class="card">
-      <div id="gate" class="gate">
-        <div class="section-title">Painel reservado</div>
-        <div class="section-sub">Área do realizador — digite o código para ver a lista de interessados.</div>
-        <div class="msg" id="gateMsg"></div>
-        <input type="text" id="gateInput" placeholder="Código de acesso">
-        <button class="btn" id="gateBtn">Entrar</button>
-        <div class="foot-link"><a id="backForm1">▸ Voltar ao formulário</a></div>
-      </div>
-
-      <div id="list" class="hidden">
-        <div class="panel-bar">
-          <div class="stat"><b id="count">0</b><span>Inscritos</span></div>
-          <div style="display:flex;gap:10px;flex-wrap:wrap">
-            <button class="btn ghost" id="refreshBtn" style="width:auto;padding:11px 16px;margin:0">Atualizar</button>
-            <button class="btn ghost" id="csvBtn" style="width:auto;padding:11px 16px;margin:0">Exportar CSV</button>
-          </div>
-        </div>
-        <div id="listBody"></div>
-        <div class="foot-link"><a id="backForm2">▸ Voltar ao formulário</a></div>
-      </div>
-    </div>
-  </div>
 </div>
 
 <script>
-/* ====== CONFIG — troque o código antes de compartilhar ====== */
-const ACCESS_CODE = "culpado9";   // <-- mude aqui o código do painel
+/* ====== CONFIG ====== */
+/* 1) Crie um formulário grátis em https://formspree.io
+   2) Copie o endpoint que aparece lá (formato: https://formspree.io/f/XXXXXXXX)
+   3) Cole abaixo no lugar de SEU_ENDPOINT_AQUI                                 */
+const FORMSPREE_ENDPOINT = "https://formspree.io/f/xaqkzyep";
 
 /* ====== Áreas disponíveis ====== */
 const AREAS = [
@@ -299,7 +274,7 @@ DISP.forEach(d=>{
 /* ====== Helpers de view ====== */
 const $=id=>document.getElementById(id);
 function show(view){
-  ['formView','doneView','panelView'].forEach(v=>$(v).classList.add('hidden'));
+  ['formView','doneView'].forEach(v=>$(v).classList.add('hidden'));
   $(view).classList.remove('hidden');
   window.scrollTo({top:0,behavior:'smooth'});
 }
@@ -315,22 +290,37 @@ $('submitBtn').addEventListener('click',async()=>{
   if(!nome){return msg(fm,'Por favor, preencha seu nome.','err');}
   if(!contato){return msg(fm,'Deixe um contato para eu te chamar.','err');}
   if(areas.length===0){return msg(fm,'Marque pelo menos uma área de interesse.','err');}
+  if(FORMSPREE_ENDPOINT.includes('SEU_ENDPOINT_AQUI')){
+    return msg(fm,'Formulário ainda não configurado: falta o endereço do Formspree no código.','err');
+  }
   clearMsg(fm);
   const btn=$('submitBtn');btn.disabled=true;btn.innerHTML='<span class="spin"></span>Enviando...';
 
-  const rec={
-    nome, contato, areas, disp:dispVal,
-    turma:$('f_turma').value.trim(),
-    port:$('f_port').value.trim(),
-    obs:$('f_obs').value.trim(),
-    ts:Date.now()
+  // dados enviados ao Formspree (chaves legíveis no painel/e-mail)
+  const payload={
+    "Nome": nome,
+    "Contato": contato,
+    "Vínculo": $('f_turma').value.trim(),
+    "Áreas de interesse": areas.join(' | '),
+    "Disponibilidade": dispVal,
+    "Portfólio": $('f_port').value.trim(),
+    "Motivação": $('f_obs').value.trim(),
+    "_subject": "CULPADO!? — Nova inscrição: "+nome
   };
-  const key='insc:'+rec.ts+'-'+Math.random().toString(36).slice(2,7);
   try{
-    await window.storage.set(key, JSON.stringify(rec), true); // shared = visível para a produção
-    show('doneView');
+    const resp=await fetch(FORMSPREE_ENDPOINT,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Accept':'application/json'},
+      body:JSON.stringify(payload)
+    });
+    if(resp.ok){ show('doneView'); }
+    else{
+      const data=await resp.json().catch(()=>({}));
+      const erro=(data&&data.errors&&data.errors[0]&&data.errors[0].message)||'Não consegui enviar agora.';
+      msg(fm,erro+' Tente novamente em instantes.','err');
+    }
   }catch(e){
-    msg(fm,'Não consegui salvar agora. Tente novamente em instantes.','err');
+    msg(fm,'Sem conexão ou envio bloqueado. Verifique a internet e tente novamente.','err');
   }finally{
     btn.disabled=false;btn.textContent='Quero participar';
   }
@@ -341,63 +331,5 @@ $('anotherBtn').addEventListener('click',()=>{
   document.querySelectorAll('#areasGrid input:checked').forEach(c=>{c.checked=false;c.closest('.area').classList.remove('sel');});
   document.querySelectorAll('#dispChips .chip').forEach(x=>x.classList.remove('on'));dispVal='';
   show('formView');
-});
-
-/* ====== Painel ====== */
-$('goPanel').addEventListener('click',()=>{show('panelView');$('gate').classList.remove('hidden');$('list').classList.add('hidden');});
-$('backForm1').addEventListener('click',()=>show('formView'));
-$('backForm2').addEventListener('click',()=>show('formView'));
-$('gateBtn').addEventListener('click',()=>{
-  if($('gateInput').value.trim()===ACCESS_CODE){
-    $('gate').classList.add('hidden');$('list').classList.remove('hidden');loadList();
-  }else{msg($('gateMsg'),'Código incorreto.','err');}
-});
-$('gateInput').addEventListener('keydown',e=>{if(e.key==='Enter')$('gateBtn').click();});
-$('refreshBtn').addEventListener('click',loadList);
-
-let CURRENT=[];
-async function loadList(){
-  const body=$('listBody');body.innerHTML='<div class="empty"><span class="spin"></span> Carregando inscrições...</div>';
-  try{
-    const res=await window.storage.list('insc:',true);
-    const keys=(res&&res.keys)?res.keys:[];
-    const recs=[];
-    for(const k of keys){
-      try{const r=await window.storage.get(k,true);if(r&&r.value)recs.push(JSON.parse(r.value));}catch(e){}
-    }
-    recs.sort((a,b)=>b.ts-a.ts);
-    CURRENT=recs;
-    $('count').textContent=recs.length;
-    if(recs.length===0){body.innerHTML='<div class="empty">Nenhuma inscrição ainda. Compartilhe o link com a turma.</div>';return;}
-    body.innerHTML=recs.map(r=>{
-      const d=new Date(r.ts).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
-      const tags=(r.areas||[]).map(a=>`<span class="tag">${esc(a)}</span>`).join('');
-      return `<div class="insc">
-        <div class="who"><h3>${esc(r.nome)}</h3><span class="when">${d}</span></div>
-        <div class="line"><b>Contato:</b> ${esc(r.contato)}</div>
-        ${r.turma?`<div class="line"><b>Turma:</b> ${esc(r.turma)}</div>`:''}
-        ${r.disp?`<div class="line"><b>Disponibilidade:</b> ${esc(r.disp)}</div>`:''}
-        ${r.port?`<div class="line"><b>Portfólio:</b> ${esc(r.port)}</div>`:''}
-        ${r.obs?`<div class="line"><b>Motivação:</b> ${esc(r.obs)}</div>`:''}
-        <div class="tags">${tags}</div>
-      </div>`;
-    }).join('');
-  }catch(e){
-    body.innerHTML='<div class="empty">Erro ao carregar. Toque em Atualizar.</div>';
-  }
-}
-function esc(s){return String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
-
-$('csvBtn').addEventListener('click',()=>{
-  if(!CURRENT.length)return;
-  const head=['Data','Nome','Contato','Turma','Disponibilidade','Areas','Portfolio','Motivacao'];
-  const rows=CURRENT.map(r=>[
-    new Date(r.ts).toLocaleString('pt-BR'),r.nome,r.contato,r.turma||'',r.disp||'',
-    (r.areas||[]).join(' | '),r.port||'',r.obs||''
-  ]);
-  const csv=[head,...rows].map(line=>line.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
-  const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
-  const url=URL.createObjectURL(blob);const a=document.createElement('a');
-  a.href=url;a.download='culpado_equipe_interessados.csv';a.click();URL.revokeObjectURL(url);
 });
 </script>
