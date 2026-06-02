@@ -95,6 +95,14 @@
   .area .a-name{font-family:'Fraunces',serif;font-weight:400;font-size:15px;letter-spacing:0;color:var(--pergaminho-dim);display:block;line-height:1.25}
   .area .a-desc{font-family:'Manrope',sans-serif;font-size:11.5px;color:var(--cinza);margin-top:4px;display:block;line-height:1.4}
   .area.sel{border-color:var(--brasa);background:rgba(232,118,45,.06)}
+  .area .rank{position:absolute;left:13px;top:12px;width:20px;height:20px;border-radius:50%;background:var(--brasa);color:var(--carvao);font-family:'JetBrains Mono',monospace;font-weight:500;font-size:11px;display:none;align-items:center;justify-content:center;line-height:1;box-shadow:0 0 10px rgba(232,118,45,.5)}
+  .area.sel .box{display:none}
+  .area.sel .rank{display:flex}
+  /* aceite: checkbox simples, sem rank */
+  #aceiteField .box{display:flex}
+  #aceiteField input:checked ~ .box{border-color:var(--brasa)}
+  #aceiteField input:checked ~ .box::after{transform:scale(1)}
+  #aceiteField input:checked ~ .a-name{color:var(--pergaminho)}
 
   .row2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
   @media(max-width:560px){.row2{grid-template-columns:1fr}}
@@ -151,10 +159,10 @@
 
 <div class="wrap">
   <header>
-    <div class="kicker">Trinity Arts Lab · TCC · Chamada de Equipe</div>
+    <div class="kicker">Curta Universitário · TCC · Chamada de Equipe</div>
     <div class="logo">Culpado<span class="q">!?</span></div>
     <hr class="ember-rule">
-    <p class="tagline">Um curta de horror psicológico. Procuro pessoas interessadas em compor o projeto e construir isso comigo — da turma ou de fora dela — em frente à fogueira, no escuro do teatro.</p>
+    <p class="tagline">Curta universitário de horror psicológico — trabalho final de TCC, sem fins lucrativos. Procuro pessoas interessadas em compor o projeto comigo, da turma ou de fora dela.</p>
     <div class="meta">Direção e roteiro <b>ARALTO</b> · Rio de Janeiro · <b>5 diárias</b> de filmagem</div>
   </header>
 
@@ -182,9 +190,10 @@
         </label>
       </div>
 
-      <div class="section-title" style="margin-top:8px">02 · Em que área você quer atuar</div>
-      <div class="section-sub">Marque tudo que te interessa. Pode ser mais de uma — a gente acerta os detalhes depois.</div>
+      <div class="section-title" style="margin-top:8px">02 · Suas áreas de interesse</div>
+      <div class="section-sub">Escolha até 3 áreas, em ordem de prioridade. Toque na 1ª opção, depois na 2ª e na 3ª — os números aparecem na ordem em que você escolher.</div>
       <div class="areas-grid" id="areasGrid"></div>
+      <div id="rankHint" style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--cinza);margin-top:10px">Selecionadas: 0 de 3</div>
 
       <div style="margin-top:26px">
         <div class="section-title">03 · Disponibilidade</div>
@@ -203,8 +212,20 @@
         <textarea id="f_obs" placeholder="O que te atraiu, o que você espera, qualquer observação..."></textarea>
       </label>
 
+      <div style="margin-top:26px;border:1px solid var(--carvao-up);border-left:2px solid var(--brasa);border-radius:3px;padding:16px 18px;background:rgba(232,118,45,.04)">
+        <div class="section-title" style="margin-bottom:8px">04 · Antes de enviar</div>
+        <p style="font-family:'Manrope',sans-serif;font-size:13px;color:var(--pergaminho-dim);line-height:1.6;margin:0 0 12px">
+          O <i>Culpado!?</i> é um curta universitário, realizado como trabalho final de conclusão de curso (TCC), <b style="color:var(--pergaminho)">sem fins lucrativos</b>. A participação é colaborativa e não remunerada. Participar deste projeto <b style="color:var(--pergaminho)">não garante</b> envolvimento em outros projetos futuros.
+        </p>
+        <label class="area" id="aceiteField" style="display:block;cursor:pointer">
+          <input type="checkbox" id="f_aceite">
+          <span class="box"></span>
+          <span class="a-name">Li e concordo com os termos acima</span>
+        </label>
+      </div>
+
       <button class="btn" id="submitBtn">Quero participar</button>
-      <p class="note">Suas respostas vão direto para a lista de interessados da produção. Sem spam, sem compromisso fechado — é só o primeiro passo.</p>
+      <p class="note">Suas respostas vão direto para a lista de interessados da produção. Sem spam — é só o primeiro passo.</p>
     </div>
   </div>
 
@@ -248,18 +269,40 @@ const AREAS = [
 const DISP = ["Sim, todas as 5","Parcial — só alguns dias","Depende da escala","Só pós/remoto"];
 
 /* ====== Render dinâmico ====== */
+const MAX_AREAS = 3;
+let pickOrder = [];           // guarda os nomes das áreas na ordem escolhida
 const grid = document.getElementById('areasGrid');
 AREAS.forEach((a,i)=>{
-  const el=document.createElement('label');
+  const el=document.createElement('div');
   el.className='area';
-  el.innerHTML=`<input type="checkbox" value="${a[0].replace(/"/g,'&quot;')}">
-    <span class="box"></span>
+  el.dataset.name=a[0];
+  el.innerHTML=`<span class="box"></span>
+    <span class="rank"></span>
     <span class="a-name">${a[0]}</span>
     <span class="a-desc">${a[1]}</span>`;
-  const cb=el.querySelector('input');
-  cb.addEventListener('change',()=>el.classList.toggle('sel',cb.checked));
+  el.addEventListener('click',()=>toggleArea(el));
   grid.appendChild(el);
 });
+function renderRanks(){
+  document.querySelectorAll('#areasGrid .area').forEach(el=>{
+    const idx=pickOrder.indexOf(el.dataset.name);
+    if(idx>=0){ el.classList.add('sel'); el.querySelector('.rank').textContent=idx+1; }
+    else{ el.classList.remove('sel'); el.querySelector('.rank').textContent=''; }
+  });
+  const hint=document.getElementById('rankHint');
+  hint.textContent='Selecionadas: '+pickOrder.length+' de '+MAX_AREAS;
+}
+function toggleArea(el){
+  const nome=el.dataset.name;
+  const idx=pickOrder.indexOf(nome);
+  const fm=$('formMsg');
+  if(idx>=0){ pickOrder.splice(idx,1); clearMsg(fm); }   // desmarca e renumera
+  else{
+    if(pickOrder.length>=MAX_AREAS){ msg(fm,'Você já escolheu 3 áreas. Toque em uma delas para trocar.','err'); return; }
+    pickOrder.push(nome); clearMsg(fm);
+  }
+  renderRanks();
+}
 const chipsWrap=document.getElementById('dispChips');
 let dispVal="";
 DISP.forEach(d=>{
@@ -285,26 +328,28 @@ function clearMsg(el){el.className='msg';}
 $('submitBtn').addEventListener('click',async()=>{
   const nome=$('f_nome').value.trim();
   const contato=$('f_contato').value.trim();
-  const areas=[...document.querySelectorAll('#areasGrid input:checked')].map(c=>c.value);
   const fm=$('formMsg');
   if(!nome){return msg(fm,'Por favor, preencha seu nome.','err');}
   if(!contato){return msg(fm,'Deixe um contato para eu te chamar.','err');}
-  if(areas.length===0){return msg(fm,'Marque pelo menos uma área de interesse.','err');}
+  if(pickOrder.length===0){return msg(fm,'Escolha pelo menos uma área de interesse.','err');}
+  if(!$('f_aceite').checked){return msg(fm,'Para enviar, confirme que leu e concorda com os termos do projeto.','err');}
   if(FORMSPREE_ENDPOINT.includes('SEU_ENDPOINT_AQUI')){
     return msg(fm,'Formulário ainda não configurado: falta o endereço do Formspree no código.','err');
   }
   clearMsg(fm);
   const btn=$('submitBtn');btn.disabled=true;btn.innerHTML='<span class="spin"></span>Enviando...';
 
-  // dados enviados ao Formspree (chaves legíveis no painel/e-mail)
   const payload={
     "Nome": nome,
     "Contato": contato,
     "Vínculo": $('f_turma').value.trim(),
-    "Áreas de interesse": areas.join(' | '),
+    "Área 1ª opção": pickOrder[0]||"",
+    "Área 2ª opção": pickOrder[1]||"",
+    "Área 3ª opção": pickOrder[2]||"",
     "Disponibilidade": dispVal,
     "Portfólio": $('f_port').value.trim(),
     "Motivação": $('f_obs').value.trim(),
+    "Aceite (TCC sem fins lucrativos)": "Sim — li e concordo",
     "_subject": "CULPADO!? — Nova inscrição: "+nome
   };
   try{
@@ -328,7 +373,8 @@ $('submitBtn').addEventListener('click',async()=>{
 
 $('anotherBtn').addEventListener('click',()=>{
   ['f_nome','f_contato','f_turma','f_port','f_obs'].forEach(id=>$(id).value='');
-  document.querySelectorAll('#areasGrid input:checked').forEach(c=>{c.checked=false;c.closest('.area').classList.remove('sel');});
+  pickOrder=[]; renderRanks();
+  $('f_aceite').checked=false;
   document.querySelectorAll('#dispChips .chip').forEach(x=>x.classList.remove('on'));dispVal='';
   show('formView');
 });
